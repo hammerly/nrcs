@@ -1,0 +1,624 @@
+---
+title: "Saturated Hydraulic Conductivity in the Dillon Creek and Hall Creek Watersheds"
+author: "John Hammerly"
+date: "`r Sys.Date()`"
+output: html_document
+---
+# Study Area
+
+The study area of interest includes 2 similar watershed areas in southern Indiana. Observations and measurements were taken in the Dillon Creek watershed where a model was developed.  Hall Creek watershed is where the model was applied.  The extents of the watersheds mapped below, show the Dillon Creek Watershed matches the HUC12 unit.  The Hall Creek Watershed were the model was applied is a subset of the HUC12 Hall Creek Watershed.
+
+```{r include = FALSE}
+
+# load required libraries
+library(sf)
+library(ggplot2)
+library(raster)
+library(viridis)
+library(knitr)
+library(sf)
+library(soilDB)
+library(dplyr)
+library(readxl)
+
+# read study area shapefiles
+dc <- st_read("D:/Cloud/Annum_Data/FY2019/Region 11/NO/INTERP/spatial_data/Dillon_HUC.shp")
+dh <- st_read("D:/Cloud/Annum_Data/FY2019/Region 11/NO/INTERP/spatial_data/Dillon_Hall_HUC.shp")
+hc <- st_read("D:/Cloud/Annum_Data/FY2019/Region 11/NO/INTERP/Indiana_DSM_Project/HUC12_Hall_Creek/watershed_30m.shp")
+
+shc <- st_read("D:/Cloud/Annum_Data/FY2019/Region 11/NO/INTERP/spatial_data/SSURGO/spatial/soilmu_a_aoi.shp", stringsAsFactors = FALSE)
+sdc <- st_read("D:/Cloud/Annum_Data/FY2019/Region 11/NO/INTERP/spatial_data/D_Creek_SSURGO/spatial/soilmu_a_aoi.shp")
+
+```
+
+
+```{r fig.height=8, fig.width=10, message=FALSE, warning=FALSE, echo = FALSE, message = FALSE}
+
+# plot study area
+ggplot() +
+  geom_sf(data = dh) +
+  geom_sf(data = hc, fill = "blue4", alpha = .75) +
+  geom_sf(data = dc, fill = "blue4", alpha = .75) +
+  geom_sf_label(data = dh, aes(label = dh$NAME)) +
+  geom_sf_label(data = hc, aes(label = "Hall Creek Subset"), nudge_y = .01) +
+  theme_minimal() +
+  labs(x = "Longitude", y = "Latitude")
+```
+
+# Dillon Creek
+
+Amoozemeter measurements were collected in pasture and forest catchments.  Sites and pedons are in NASIS.  Amoozemeter measurements are not.  Adding them would require a permission change to Region 11, or a willing data entry staff member from Region 6.
+
+## Catchment Locations
+
+The forest catchment is located just outside the watershed.
+
+```{r fig.height=5, fig.width=10, message=FALSE, warning=FALSE, echo = FALSE, }
+
+# fetch NASIS pedons from study area
+p <- fetchNASIS()
+
+s <- site(p)
+
+s <- s %>% mutate(chmnt = "pasture")
+
+s[9:13, 92] <- "forest"
+
+pc <- p[1:8]
+
+sp <- site(pc)
+
+fc <- p[9:13]
+
+fp <- site(fc)
+
+# plot pedon locations
+ggplot(dc) +
+  geom_sf() +
+  theme_minimal() +
+  geom_point(data = s, mapping = aes(x = x_std, y = y_std, color = chmnt)) +
+  labs(x = "Longitude", y = "Latitude", color = "Catchment")
+```
+
+## Pasture Catchment
+
+### NASIS Pedon Profiles
+
+These pedons have correlated taxonomic classifications.
+
+```{r fig.height=5, fig.width=10, message=FALSE, warning=FALSE, echo = FALSE}
+
+# plot pedon profiles
+plot(pc, label = "site_id", alt.label = "taxonname", alt.label.col = "white")
+
+```
+
+### NASIS Pedon Locations
+
+```{r fig.height=5, fig.width=10, message=FALSE, warning=FALSE, echo = FALSE}
+
+# plot pedon locations
+ggplot(dc) +
+  geom_sf() +
+  theme_minimal() +
+  geom_point(data = sp, mapping = aes(x = x_std, y = y_std, color = taxonname)) +
+  labs(x = "Longitude", y = "Latitude", color = "NASIS Series") +
+  coord_sf(x = c(min(sp$x_std)-.002, max(sp$x_std)+.002), y = c(min(sp$y_std)-.002, max(sp$y_std)+.002)) +
+  geom_text(data = sp, mapping = aes(x = x_std, y = y_std, label = c(1:8)), nudge_x =.0001)
+  
+```
+
+### Amoozemeter Ksat Data
+
+Measurement data includes a mean ksat and standard deviation for each of the 5 repetitions at each site.  Comparing the series in the table below to the NASIS pedons, you can see discrepancies.  Revisiting the classification of these soils and updating in NASIS and this table is needed.  The table below is a cleaned version of the summary of raw data.
+
+```{r message=FALSE, warning=FALSE, echo = FALSE}
+
+# Load up pasture ksat summary data and clean it up 
+
+pksat <- read_excel("D:/Cloud/Annum_Data/FY2019/Region 11/NO/INTERP/Indiana_DSM_Project/Pasture_Catchment/Soil_Pits/Ksat_Data/Ksat_Soil_Moisture_Pits.xls", skip = 2)
+
+# reformat field labels, removing dash
+pksat$`Field Label` <- gsub("-0", "0", pksat$`Field Label`)
+
+# move last digit of field label to a new layer column
+pksat <- pksat %>% mutate(layer = substr(pksat$`Field Label`, 13,13))
+
+# keep only the site_id from field label, make new site_id column, convert cm/hr ksat to micrometers/second
+pksat <- pksat %>% mutate(site_id = substr(pksat$`Field Label`, 1, 11), um_ksat = round(pksat$`cm hr-1`*2.778, 4), position = pksat$`Soil Series...5`)
+
+# replace series names in position column with position
+pksat[c(1,4,7,10,13,15,19,22),11] <- pksat[c(2,5,8,11,14,16,20,23),11]
+
+# replace NAs with position
+pksat[c(3,6,9,12,17,18,21,24), 11] <- pksat[c(2,5,8,11,16,16,20,23),11]
+
+# change position to lowercase
+pksat <- pksat %>% mutate_at(11, list(position = tolower))
+
+# remove spaces in position
+pksat$position <- gsub(" ", "", pksat$position)
+
+# rename columns column
+pksat <- pksat %>% rename("taxonname" = `Soil Series...5`, "ssurgo_taxonname" = `Soil Series...6`, "taxon_class" = ...7, "horizon" = Horizon, "depb" = `Depth (cm)`)
+
+# copy series to other rows
+pksat[c(2,3,5,6,8,9,11,12,14,16,17,18,20,21,23,24),5] <- pksat[c(1,1,4,4,7,7,10,10,13,15,15,15,19,19,22,22),5]
+
+# copy ssurgo series to other rows
+pksat[c(2,3,5,6,8,9,11,12,14,16,17,18,20,21,23,24),6] <- pksat[c(1,1,4,4,7,7,10,10,13,15,15,15,19,19,22,22),6]
+
+# copy taxon class to other rows
+pksat[c(2,3,5,6,8,9,11,12,14,16,17,18,20,21,23,24),7] <- pksat[c(1,1,4,4,7,7,10,10,13,15,15,15,19,19,22,22),7]
+
+# add top depth column
+pksat <- pksat %>% group_by(site_id) %>% mutate(dept = lag(depb))
+
+# add zero depths for surface
+pksat$dept[is.na(pksat$dept)] <- 0
+
+# reorder columns
+pksat <- pksat %>% select(site_id, layer, horizon, dept, depb, um_ksat, taxonname, ssurgo_taxonname, taxon_class, position)
+
+# add catchment column
+pksat <- pksat %>% mutate(catchment = "pasture")
+
+# show table
+kable(pksat)
+
+```
+
+### Amoozemeter Ksat Plots
+
+Not all soil layers described had ksat measurements taken.  The plots below are of only the measured horizons.
+
+```{r message=FALSE, warning=FALSE, echo = FALSE}
+
+# calculate center of layers
+pksat <- pksat %>% mutate(mdep = (depb + dept)/2)
+
+# plot ksat vs. depth by pedon
+ggplot(pksat) +
+  geom_text(
+    aes(
+      y     = pksat$um_ksat,
+      x     = pksat$mdep,
+      label = pksat$horizon
+    ),
+    size    = 4,
+    hjust   = 0,
+    nudge_y = .1
+  ) +
+  coord_flip() +
+  scale_x_reverse() +
+  geom_step(
+    direction = "vh", aes(y = pksat$um_ksat, x = pksat$dept)
+  ) +
+  geom_step(
+    aes(
+      y = pksat$um_ksat,
+      x = pksat$depb)
+  ) +
+  geom_point(
+    aes(
+      y = pksat$um_ksat,
+      x = pksat$mdep
+      ),
+      color = "red"
+  ) +
+  facet_wrap(~ pksat$site_id) +
+  labs(
+    title = "Mean Values by Pedon",
+    y = expression(
+         paste(K[sat], " (micrometers/second)")
+        ),
+    x = "Depth (cm)"
+  ) +
+  expand_limits(y = pksat$um_ksat * 10
+  ) +
+  scale_y_log10(breaks = c(0, 0.01, 0.1, 1, 10, 100), minor_breaks = waiver(), labels = waiver())
+```
+
+## Forest Catchment
+
+### NASIS Pedon Profiles
+
+These pedons taxonomic classification is still "sampled as", and should be updated.
+
+```{r fig.height=5, fig.width=10, message=FALSE, warning=FALSE, echo = FALSE}
+
+# plot pedon profiles
+plot(fc, label = "site_id", alt.label = "taxonname", alt.label.col = "white")
+```
+
+### NASIS Pedon Locations
+
+These measurements were taken just beyond the boundary of the watershed.
+
+```{r fig.height=5, fig.width=10, message=FALSE, warning=FALSE, echo = FALSE}
+
+# plot pedon locations
+ggplot(dc) +
+  geom_sf() +
+  theme_minimal() +
+  geom_point(data = fp, mapping = aes(x = x_std, y = y_std, color = taxonname)) +
+  labs(x = "Longitude", y = "Latitude", color = "Series") +
+  coord_sf(x = c(min(fp$x_std)-.002, max(fp$x_std)+.002), y = c(min(fp$y_std)-.002, max(fp$y_std)+.002)) +
+  geom_text(data = fp, mapping = aes(x = x_std, y = y_std, label = c(1:5)), nudge_y =-.0001, nudge_x =.00005)
+```
+
+### Amoozemeter Ksat Data
+
+```{r message=FALSE, warning=FALSE, echo = FALSE}
+
+# Load up forest ksat summary data and clean it up 
+fksat <- read_excel("D:/Cloud/Annum_Data/FY2019/Region 11/NO/INTERP/Indiana_DSM_Project/Forest_Catchment/Soil_Pits/Ksat_Data/Ksat_Soil_Moisture_Pits.xls", skip = 1)
+
+# move position from field label column to new column
+fksat <- fksat %>% mutate("position" = `Field Label`, um_ksat = round(fksat$`cm hr-1`*2.778, 4))
+
+# remove field labels
+fksat[c(1,5,9,12,15),8] <- fksat[c(2,6,10,13,16), 8]
+
+# remove position from field label column
+fksat[c(2,6,10,13,16), 1] <- fksat[c(1,5,9,12,15),1]
+
+# copy field labels to other rows
+fksat[c(3,4,7,8,11,14,17), 1] <- fksat[c(1,1,5,5,9,12,15),1]
+
+# copy position to other rows
+fksat[c(3,4,7,8,11,14,17), 8] <- fksat[c(1,1,5,5,9,12,15),8]
+
+# change position to lowercase
+fksat <- fksat %>% mutate_at(8, list(position = tolower))
+
+# remove spaces in position
+fksat$position <- gsub(" ", "", fksat$position)
+
+# make new layer column
+fksat <- fksat %>% group_by(`Field Label`) %>% mutate("layer" = as.character(row_number()))
+
+# rename columns column
+fksat <- fksat %>% rename("site_id" = `Field Label`, "taxonname" = `Soil Series...5`, "ssurgo_taxonname" = `Soil Series...6`, "taxon_class" = `Field Taxonomic Classification`, "horizon" = Horizon, "depb" = `Depth (cm)`)
+
+# add top depth column
+fksat <- fksat %>% group_by(site_id) %>% mutate(dept = lag(depb))
+
+# add zero depths for surface
+fksat$dept[is.na(fksat$dept)] <- 0
+
+# copy series to other rows
+fksat[c(2:4,6:8,10:11,13:14,16:17),5] <- fksat[c(1,1,1,5,5,5,9,9,12,12,15,15),5]
+
+# copy ssurgo series to other rows
+fksat[c(2:4,6:8,10:11,13:14,16:17),6] <- fksat[c(1,1,1,5,5,5,9,9,12,12,15,15),6]
+
+# copy taxon class to other rows
+fksat[c(2:4,6:8,10:11,13:14,16:17),7] <- fksat[c(1,1,1,5,5,5,9,9,12,12,15,15),7]
+
+# ungroup
+fksat <- ungroup(fksat)
+
+# reorder columns
+fksat <- fksat %>% dplyr::select(site_id, layer, horizon, dept, depb, um_ksat, taxonname, ssurgo_taxonname, taxon_class, position)
+
+# add catchment column
+fksat <- fksat %>% mutate(catchment = "forest")
+
+# show table
+kable(fksat)
+```
+
+### Amoozemeter Ksat Plots
+
+```{r message=FALSE, warning=FALSE, echo = FALSE}
+
+# calculate center of layers
+fksat <- fksat %>% mutate(mdep = (depb + dept)/2)
+
+# plot ksat vs. depth by pedon
+ggplot(fksat) +
+  geom_text(
+    aes(
+      y     = fksat$um_ksat,
+      x     = fksat$mdep,
+      label = fksat$horizon
+    ),
+    size    = 4,
+    hjust   = 0,
+    nudge_y = .1
+  ) +
+  coord_flip() +
+  scale_x_reverse() +
+  geom_step(
+    direction = "vh", aes(y = fksat$um_ksat, x = fksat$dept)
+  ) +
+  geom_step(
+    aes(
+      y = fksat$um_ksat,
+      x = fksat$depb)
+  ) +
+  geom_point(
+    aes(
+      y = fksat$um_ksat,
+      x = fksat$mdep
+      ),
+      color = "red"
+  ) +
+  facet_wrap(~ fksat$site_id) +
+  labs(
+    title = "Mean Values by Pedon",
+    y = expression(
+         paste(K[sat], " (micrometers/second)")
+        ),
+    x = "Depth (cm)"
+  ) +
+  expand_limits(y = fksat$um_ksat * 10
+  ) +
+  scale_y_log10(breaks = c(0, 0.01, 0.1, 1, 10, 100), minor_breaks = waiver(), labels = waiver())
+```
+
+```{r echo = FALSE}
+
+# combine pasture and forest datasets
+aksat <- bind_rows(pksat, fksat)
+
+```
+
+### SSURGO Ksat
+
+Ksat data from SSURGO indicates little variability at the surface, and greater variability at the bottoms of the soil profiles.
+
+```{r echo=FALSE, fig.keep = "hold", out.width = "50%", message=FALSE, warning=FALSE}
+
+# Ksat for Dillon Creek
+cpnts <- fetchNASIS(from = "components")
+
+mpunts <- get_mapunit_from_NASIS()
+
+corr <- get_component_correlation_data_from_NASIS_db()
+
+corr <- corr %>% mutate(lmapunitiid = as.character(lmapunitiid))
+
+sdcmu <- sdc %>% left_join(corr, by = c("MUKEY" = "lmapunitiid"))
+
+sdcmudmu <- sdcmu %>% left_join(cpnts@site, by = "dmuiid")
+
+cpntshz <- cpnts@horizons %>% mutate(coiid = as.character(coiid))
+
+s_dmu_co <- sdcmudmu %>% left_join(cpntshz, by = "coiid")
+
+sdc_ksat1 <- s_dmu_co %>% filter(hzdept_r == 0) %>%  group_by(nationalmusym) %>% summarize(surf_ksat = round(weighted.mean(ksat_r, w = comppct_r), 2))
+
+# plot ksat values
+# plot(sdc_ksat1["surf_ksat"], breaks = c(0,10,20,30,40,50,60,70,80,90,100), pal =rev(viridis(10)), main = "Ksat, top layer - even scale")
+
+sdc_ksat1_t <- st_drop_geometry(sdc_ksat1)
+
+
+
+# kable(sdc_ksat1_t)
+
+# plot using ksat class breaks
+plot(sdc_ksat1["surf_ksat"], pal = rev(viridis(5)), logz = TRUE, breaks = c(-3, -2, -1, 0, 1, 2), at = c(-3, -2, -1, 0, 1, 2), main = "Ksat, top layer - log scale")
+
+sdc_ksat3 <- s_dmu_co %>% group_by(nationalmusym, compname, comppct_r) %>% top_n(1, hzdepb_r) %>%  group_by(nationalmusym) %>% summarize(bot_ksat = round(weighted.mean(ksat_r, w = comppct_r, na.rm = TRUE), 2))
+
+# plot ksat values
+# plot(sdc_ksat3["bot_ksat"], pal =  rev(viridis(10)), main = "Ksat, bottom layer, - even scale")
+
+sdc_ksat3_t <- st_drop_geometry(sdc_ksat3)
+
+bxpgrp1 <- mutate(sdc_ksat1_t, layer = "top", "ksat" = surf_ksat)
+bxpgrp3 <- mutate(sdc_ksat3_t, layer = "bottom", "ksat" = bot_ksat)
+
+
+bxp <- bind_rows(bxpgrp1, bxpgrp3)
+
+# kable(sdc_ksat3_t)
+
+# plot using ksat class breaks
+plot(sdc_ksat3["bot_ksat"], pal =  rev(viridis(5)),logz = TRUE, breaks = c(-3, -2, -1, 0, 1, 2), at = c(-3, -2, -1, 0, 1, 2), main = "Ksat, bottom layer - log scale")
+```
+
+```{r echo = FALSE}
+ggplot(bxp) +
+stat_boxplot(data = bxp, aes(y = ksat, x = layer)) +
+scale_y_log10() +
+  labs(x = "Layer")
+
+summary(bxp)
+```
+
+```{r fig.height=15, fig.width=10, warning = FALSE, echo = FALSE, message = FALSE}
+# calculate center of layers
+
+s_dmu_co2 <- st_drop_geometry(s_dmu_co)
+
+s_dmu_co2 <- s_dmu_co2 %>% mutate(mdep = (hzdepb_r + hzdept_r)/2)
+
+s_dmu_co2 <- s_dmu_co2 %>% filter(!is.na(ksat_r))
+
+# plot ksat vs. depth by pedon
+ggplot(s_dmu_co2) +
+  geom_text(
+    aes(
+      y     = s_dmu_co2$ksat_r,
+      x     = s_dmu_co2$mdep,
+      label = s_dmu_co2$hzname
+    ),
+    size    = 4,
+    hjust   = 0,
+    nudge_y = .1,
+    alpha = .01
+  ) +
+  coord_flip() +
+  scale_x_reverse() +
+  geom_step(
+    direction = "vh", aes(y = s_dmu_co2$ksat_r, x = s_dmu_co2$hzdept_r)
+  ) +
+  geom_step(
+    aes(
+      y = s_dmu_co2$ksat_r,
+      x = s_dmu_co2$hzdepb_r)
+  ) +
+  geom_point(
+    aes(
+      y = s_dmu_co2$ksat_r,
+      x = s_dmu_co2$mdep
+      ),
+      color = "red"
+  ) +
+  facet_wrap(~ s_dmu_co2$compname + s_dmu_co2$compkind) +
+  labs(
+    title = "Mean Values by Component",
+    y = expression(
+         paste(K[sat], " (micrometers/second)")
+        ),
+    x = "Depth (cm)"
+  ) +
+  expand_limits(y = s_dmu_co2$ksat_r * 10
+  ) +
+  scale_y_log10(breaks = c(0, 0.01, 0.1, 1, 10, 100), minor_breaks = waiver(), labels = c(0, 0.01, 0.1, 1, 10, 100))
+```
+
+
+# Hall Creek Watershed Subset
+
+### SSURGO Ksat
+
+```{r echo=FALSE, fig.keep= "hold", out.width="50%", message=FALSE, warning=FALSE}
+shcmu <- shc %>% left_join(corr, by = c("MUKEY" = "lmapunitiid"))
+
+shcmudmu <- shcmu %>% left_join(cpnts@site, by = "dmuiid")
+
+cpntshz_hc <- cpnts@horizons %>% mutate(coiid = as.character(coiid))
+
+s_dmu_co_hc <- shcmudmu %>% left_join(cpntshz_hc, by = "coiid")
+
+shc_ksat1 <- s_dmu_co_hc %>% filter(hzdept_r == 0) %>%  group_by(nationalmusym) %>% summarize(surf_ksat = round(weighted.mean(ksat_r, w = comppct_r), 2))
+
+# plot ksat values
+# plot(shc_ksat1["surf_ksat"], breaks = c(0,10,20,30,40,50,60,70,80,90,100), pal =  rev(viridis(10)), main = "Ksat, top layer")
+
+shc_ksat1_t <- st_drop_geometry(shc_ksat1)
+
+# kable(shc_ksat1_t)
+
+# plot using ksat class breaks
+plot(shc_ksat1["surf_ksat"], pal =  rev(viridis(5)),logz = TRUE, breaks = c(-3, -2, -1, 0, 1, 2), at = c(-3, -2, -1, 0, 1, 2), main = "Ksat, top layer - log scale")
+
+
+shc_ksat3 <- s_dmu_co_hc %>% group_by(nationalmusym, compname, comppct_r) %>% top_n(1, hzdepb_r) %>%  group_by(nationalmusym) %>% summarize(bot_ksat = round(weighted.mean(ksat_r, w = comppct_r, na.rm = TRUE), 2))
+
+# plot ksat values
+# plot(shc_ksat3["bot_ksat"], breaks = c(0,10,20,30,40,50,60,70,80,90,100), pal =  rev(viridis(10)), main = "Ksat, bottom layer - even scale")
+
+shc_ksat3_t <- st_drop_geometry(shc_ksat3)
+
+bxhpgrp1 <- mutate(shc_ksat1_t, layer = "top", "ksat" = surf_ksat)
+bxhpgrp3 <- mutate(shc_ksat3_t, layer = "bottom", "ksat" = bot_ksat)
+
+
+hbxp <- bind_rows(bxhpgrp1, bxhpgrp3)
+
+
+
+# kable(shc_ksat3_t)
+
+# plot using ksat class breaks
+plot(shc_ksat3["bot_ksat"], pal =  rev(viridis(5)),logz = TRUE, breaks = c(-3, -2, -1, 0, 1, 2), at = c(-3, -2, -1, 0, 1, 2), main = "Ksat, bottom layer - log scale")
+```
+
+```{r, echo = FALSE}
+
+ggplot(hbxp) +
+stat_boxplot(data = hbxp, aes(y = ksat, x = layer)) +
+scale_y_log10() +
+  labs(x = "Layer")
+
+summary(hbxp)
+
+```
+
+```{r fig.height=8, fig.width=10, message=FALSE, warning=FALSE, echo = FALSE}
+
+# read ksat layers and convert to micrometers per second
+kt <- raster("D:/workspace/hcr/hcr_ksat_l1")*2.778
+km <- raster("D:/workspace/hcr/hcr_ksat_l2")*2.778
+kb <- raster("D:/workspace/hcr/hcr_ksat_l3")*2.778
+ka <- raster("D:/workspace/hcr/hcr_ksat_l123")*2.778
+
+# stack layers together
+d <- stack(ka,kt,km,kb)
+
+```
+
+## Modeled Ksat Layers
+
+### Even Scale
+
+```{r echo=FALSE, fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
+
+# set breaks, based on min/max values
+brks <- seq(0,2.75, by=0.01)
+
+# one less for colorscale
+nb <- length(brks)-1
+
+# build colors
+cols <- rev(viridis(nb))
+
+plot(d, breaks = brks, col = cols, axis.args = list(at = c(0, 0.25, 0.5, .75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75), cex.axis = 0.75, labels = c("0.00", "0.25", "0.50", "0.75", "1.00", "1.25", "1.50", "1.75", "2.00", "2.25", "2.50", "2.75")), zlim = c(0, 2.75), legend.width = 2, legend.shrink=0.75, main = c(expression("K"["sat"]~"all layers ("*mu*m*"/sec)"), expression("K"["sat"]~"top layer ("*mu*m*"/sec)"), expression("K"["sat"]~"middle layer ("*mu*m*"/sec)"), expression("K"["sat"]~"bottom layer ("*mu*m*"/sec)")))
+
+```
+
+### Ksat Classes
+
+```{r echo=FALSE, fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
+
+brks2 <- c(.001, 0.01, 0.1, 1, 10, 100)
+
+nb2 <- length(brks2)-1
+
+cols2 <- rev(viridis(nb2))
+
+plot(d, legend = FALSE, breaks = brks2, col = cols2, main = c(expression("K"["sat"]~"all layers"), expression("K"["sat"]~"top layer"), expression("K"["sat"]~"middle layer"), expression("K"["sat"]~"bottom layer ")))
+legend("bottom", legend = c("Very Low","Low", "Moderately Low", "Moderately High", "High"), fill = cols2)
+```
+
+### Boxplots
+
+```{r fig.height=8, fig.width=10, message=FALSE, warning=FALSE, echo = FALSE}
+
+# generate boxplots
+
+kat <- as.data.frame(ka)
+kat <- kat %>% rename("ksat" = hcr_ksat_l123) %>% mutate("layer" = "all")
+ktt <- as.data.frame(kt)
+ktt <- ktt %>% rename("ksat" = hcr_ksat_l1) %>% mutate("layer" = "top")
+kmt <- as.data.frame(km)
+kmt <- kmt %>% rename("ksat" = hcr_ksat_l2) %>% mutate("layer" = "mid")
+kbt <- as.data.frame(kb)
+kbt <- kbt %>% rename("ksat" = hcr_ksat_l3) %>% mutate("layer" = "bottom")
+
+akt <- bind_rows(kat, ktt, kmt, kbt)
+
+ggplot(akt) +
+stat_boxplot(aes(y = ksat , x = layer)) +
+scale_y_log10() +
+  labs(x = "Layer")
+
+```
+
+## Quantiles Table
+
+```{r echo = FALSE, fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
+
+# generate quantile table
+rqt <- as.data.frame(quantile(d))
+
+# show table
+kable(rqt)
+```
+

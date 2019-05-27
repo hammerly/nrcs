@@ -1,0 +1,427 @@
+---
+title: "Pedon Horizon Saturated Hydraulic Conductivity Report"
+author: "`r Sys.getenv('USERNAME')`"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+#Background
+
+Saturated Hydraulic Conductivity ($K_{sat}$) data is stored in NASIS in the "Pedon Horizon Ksat Summary" table.  The summary table contains the mean and standard deviation for a given test date.  Within this table are several child tables. This report focuses on $K_{sat}$ data collected with Amoozemeters.  The child table "Pedon Horizon Ksat Amoozemeter" stores specific information corresponding to each repetition conducted, and another child table "Pedon Horizon Ksat Amoozemeter Data" contains each individual reading of a given repetition.  This report is designed to assist in viewing the data in these tables in a meaningful way.  In order for the report to run as intended, a local NASIS database connection is required.  It also requires the pedons of interest to be loaded into the selected set.  In addition, the report is much more meaningful if you run it on a group of related pedons, such as those which are of the same series.  Also be sure to check that $K_{sat}$ data is present within the tables described above, or the report will not return any information.
+
+```{r include = FALSE}
+
+
+# Dont' forget to load Pedons into NASIS selected set.
+
+# Required Libraries
+library(dplyr)
+library(soilDB)
+library(knitr)
+library(leaflet)
+library(ggplot2)
+
+# Custom Query to load ksat data
+source(
+"https://raw.githubusercontent.com/ncss-tech/soil-pit/master/sandbox/john/ksat_query/get_hz_ksatdata_from_NASIS_db.R"
+)
+
+# Get ksat data from NASIS selected set
+h <- get_hz_ksatdata_from_NASIS_db()
+
+# Remove data without ksat summary table data
+h <- filter(h,!is.na(sathydcondmean))
+
+# Function to check data for errors
+source(
+"https://raw.githubusercontent.com/ncss-tech/soil-pit/master/sandbox/john/ksat_query/qa_ksat.R"
+)
+
+errors <- qa_ksat(h)
+
+# Compute number of pedons, return taxonomic name
+k_ped <- select(h, pedon_id)
+k_ped <- distinct(k_ped)
+ckp <- count(k_ped)
+sname <- unique(h$taxonname)
+
+# Fetch pedons to plot profiles and locations
+s <- fetchNASIS_pedons()
+
+```
+#Quality Check
+
+The quality of the $K_{sat}$ data depends on many factors.  This report checks for the following: if the top and bottom depths of the horizons in the soil profile encompass the measured $K_{sat}$ zone, and if the measured $K_{sat}$ zone is an acceptable distance from the horizons above or below.  The first issue, sometimes called "bridging horizons" can be a serious issue when the horizons bridged have significantly different $K_{sat}$
+values.  Bridging across similar horizons may not be a concern.  The second issue, although not as serious as bridging, can also cause unexpected data results.
+
+## Upper Horizon Boundary Errors
+
+This table shows the pedons which have measurement zones crossing an upper horizon boundary. The last column shows the distance to upper horizon (DUH).  Negative values indicate the number of centimeters the test zone has crossed above the upper boundary.  You can track down these errors by checking the specific repetition number within the horizon and pedon listed in the table. 
+
+```{r echo = FALSE, message = FALSE}
+
+uhe <- as.data.frame(errors[1])
+kable(uhe)
+```
+
+## Lower Horizon Boundary Errors
+
+This table shows the pedons which have measurement zones crossing a lower horizon boundary. The last column shows the distance to lower horizon (DLH).  Negative values indicate the number of centimeters the test zone has crossed below the lower boundary.  You can track down these errors by checking the specific repetition number within the horizon and pedon listed in the table. 
+
+```{r echo = FALSE, message = FALSE}
+
+lhe <- as.data.frame(errors[2])
+kable(lhe)
+```
+
+## Upper Horizon Warnings
+
+This table shows the pedons which have measurement zones too close to an upper horizon boundary. The last column shows the distance to upper horizon (DUH).  Values should be at least 2 centimeters from the top of the horizon to insure the most accurate data.  You can track down these errors by checking the specific repetition number within the horizon and pedon listed in the table. 
+
+```{r echo = FALSE, message = FALSE}
+
+uhw <- as.data.frame(errors[3])
+uhw <- filter(uhw, Upper.Horizon.Warnings.DUH >= 0)
+
+kable(uhw)
+```
+
+## Lower Horizon Warnings
+
+This table shows the pedons which have measurement zones too close to a lower horizon boundary. The last column shows the distance to lower horizon (DLH).  Values should be greater than twice the height of the water in the borehole from the bottom of the horizon to insure the most accurate data.  If the horizon below is similar to the measured horizon, there may not be any reason to take action.  You can track down these errors by checking the specific repetition number within the horizon and pedon listed in the table. 
+
+```{r echo = FALSE, message = FALSE}
+
+lhw <- as.data.frame(errors[4])
+lhw <- filter(lhw, Lower.Horizon.Warnings.DLH >= 0)
+
+kable(lhw)
+```
+
+#`r sname` Series Pedon Profile Plots
+
+**`r ckp`** pedon(s) contain measured $K_{sat}$ data.  Note some pedons may not plot due to missing horizon data.
+
+```{r echo = FALSE, message = FALSE}
+
+# Plot pedon profiles
+plot(s, label = "pedon_id")
+
+```
+
+#Pedon Location
+
+Below is a map displaying the location of each pedon.  Click a marker to view the pedon ID.
+
+```{r message = FALSE, warning = FALSE, echo = FALSE}
+
+# extract site information, display locations in a leaflet map
+s <- site(s)
+s <- filter(s, pedon_id %in% k_ped$pedon_id)
+m <- leaflet(s) %>%
+  addMarkers(
+  lat = s$y_std,
+  lng = s$x_std,
+  popup = paste0("Pedon ID: ", k_ped$pedon_id)
+  ) %>%
+  addTiles()
+  m
+
+```
+
+#Data Summary
+
+Summarizing $K_{sat}$ data can be done in several ways.  If $K_{sat}$ data was collected for same horizon in a pedon as part of an extended study at different points in time, this would indicate more than one mean $K_{sat}$ listed in the summary table - a new row for each instance, corresponding to the date which the tests were completed.  In these cases, it may be helpful to calculate an overall mean $K_{sat}$ for the horizon taking into account all the dates when $K_{sat}$ data was collected.
+
+Once the data has been summarized for each horizon, the data can be viewed as a depth plot for each individual pedon.
+
+##Pedon Horizon Ksat Summary Table
+
+###All Pedons
+
+The step-line created in these plots below show the mean $K_{sat}$ calculated from all rows in the summary table.  Shaded areas encompass the high and low values.  In instances where data gaps occur, a box shaped feature is generated indicating the uncertainty within the horizon.  It is impossible to discern if the current value continues, or if the values immediately shift to the values in the next deepest horizon.  There is also a possibility that the value is completely different than the above and below horizons in which case the box shaped feature may be misleading.  If only one horizon in the pedon has data, only a red point will indicate the measurement.
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+
+# first obtain a mean of all measurements within a horizon
+k_hz_all <-
+  h %>%
+  select(
+    peiid,
+    pedon_id,
+    hzname,
+    phiid,
+    genhz,
+    hzdept,
+    hzdepb,
+    sathydcondmean,
+    sathydcondstd,
+    pedonksatsummaryiid
+  )
+
+k_hz_all <- distinct(k_hz_all)
+k_hz_all <- mutate(k_hz_all, mhzd = (hzdept + hzdepb) / 2)
+k_hz_all_m <-
+  k_hz_all %>%
+  group_by(phiid, pedon_id, hzname, genhz, hzdept, hzdepb, mhzd) %>%
+  summarize(
+    minhksat = min(sathydcondmean),
+    mhksat   = mean(sathydcondmean),
+    maxhksat = max(sathydcondmean)
+  )
+
+# Plot of summary data
+ggplot(k_hz_all_m) +
+  geom_rect(
+    aes(
+      xmin = k_hz_all_m$hzdept,
+      ymin = k_hz_all_m$minhksat,
+      xmax = k_hz_all_m$hzdepb,
+      ymax = k_hz_all_m$maxhksat
+    ),
+    alpha = 0.25
+  ) +
+  geom_text(
+    aes(
+      y     = k_hz_all_m$mhksat,
+      x     = k_hz_all_m$mhzd,
+      label = k_hz_all_m$hzname
+    ),
+    size    = 4,
+    hjust   = 0,
+    nudge_y = .1
+  ) +
+  coord_flip() +
+  scale_x_reverse() +
+  geom_step(
+    direction = "vh", aes(y = k_hz_all_m$mhksat, x = k_hz_all_m$hzdept)
+  ) +
+  geom_step(
+    aes(
+      y = k_hz_all_m$mhksat,
+      x = k_hz_all_m$hzdepb)
+  ) +
+  geom_point(
+    aes(
+      y = k_hz_all_m$mhksat,
+      x = k_hz_all_m$mhzd
+      ),
+      color = "red"
+  ) +
+  facet_wrap(~ k_hz_all_m$pedon_id) +
+  labs(
+    title = "Pedon Horizon Ksat Summary Table by Pedon",
+    y = expression(
+         paste(K[sat], " (micrometers/second)")
+        ),
+    x = "Depth (cm)"
+  ) +
+  expand_limits(y = k_hz_all_m$mhksat * 10
+  ) +
+  scale_y_log10(breaks = c(0, 0.01, 0.1, 1, 10, 100), minor_breaks = waiver(), labels = waiver())
+  
+
+k_hz <-
+  h %>%
+  group_by(genhz) %>%
+  summarize(
+    min = min(sathydcondmean),
+    avg = mean(unique(sathydcondmean)),
+    max = max(sathydcondmean),
+    n   = n()
+  )
+
+k_hz_all_m_gn <-
+  k_hz_all_m %>%
+  group_by(genhz) %>%
+  summarize(
+    min = min(minhksat),
+    avg = mean(mhksat),
+    max = max(maxhksat),
+    n   = n()
+  )
+
+```
+
+###Generalized Pedon
+
+Generalizing these complex data can also help gain a better understanding.  Each horizon can be unique within a pedon description, it may have a slightly different designation or different top and bottom depths.  To simplify the information, we can use generalized horizon names, and generalized depths. This requires the "Comp Layer ID" field in NASIS from the horizon table to be populated.  By combining the data into an idealized pedon, such as the pedon existing as the "Official Series Description", it can become easier to identify trends.
+
+The red line in the plot below is the mean $K_{sat}$ calculated after horizons were generalized.  The shaded areas encompass the high and low values.  The points represent the summary data from each pedon, and are labeled to identify what the actual horizon designation is before generalization.  For comparison, a profile plot of the official series description is displayed to the right of the $K_{sat}$ plot.
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE, fig.show='hold', out.width = '50%'}
+
+osd <- fetchOSD(paste0('"', sname, '"'))
+osdkall <- osd
+
+
+osdkall@horizons <- mutate(osdkall@horizons, genhz = gsub("\\d$", "", osdkall@horizons$hzname))
+
+osdkallm <- inner_join(osdkall@horizons, k_hz_all_m_gn, by = "genhz")
+
+hkallmax <- max(k_hz_all_m_gn$max)
+hkallmin <- min(k_hz_all_m_gn$min)
+
+dptkallm <- ggplot() +
+    geom_rect(aes(xmin = osdkallm$top, ymin = osdkallm$min, xmax = osdkallm$bottom, ymax = osdkallm$max), alpha = 0.25) +
+  geom_text(aes(y = osdkallm$avg, x = (osdkallm$top+osdkallm$bottom)/2, label = osdkallm$hzname, size = 16)) +
+  coord_flip() +
+  scale_x_reverse() +
+  geom_step(direction = "vh", aes(y = osdkallm$avg, x = osdkallm$top), color = "red") +
+    geom_step(aes(y = osdkallm$avg, x = osdkallm$bottom), color = "red") +
+
+  labs(title = "Generalized Data from Pedon Horizon Ksat Summary Table", x = "Depth (cm)", y = expression(paste(K[sat]," (micrometers/second)"))) +
+  theme(axis.text=element_text(size=16), legend.position="none", plot.margin = unit(c(0,0.5,0,0), "cm")) +
+  geom_point(aes(x = (k_hz_all$hzdept+k_hz_all$hzdepb/2), y = k_hz_all$sathydcondmean), color = "grey25") +
+  geom_text(aes(y = k_hz_all$sathydcondmean, x = (k_hz_all$hzdept+k_hz_all$hzdepb/2)), label = k_hz_all$hzname, color = "grey50", nudge_x = 5) +
+  expand_limits(x = 200) +
+  expand_limits(x = 0) +
+  scale_y_log10(breaks = c(0, 0.01, 0.1, 1, 10, 100))
+
+
+dptkallm
+
+plot(osd, cex.names = 1, x.idx.offset = -.1, max.depth = 200, plot.depth.axis=TRUE, par(mar= c(2.5,0,0,4)))
+```
+
+##Pedon Horizon Ksat Amoozemeter Table
+
+The data within the summary table is limited since it is the mean calculated from each measurement repetition.  Within the "Pedon Horizon Ksat Amoozemeter" table, each repetition has a mean calculated from the individual measurements.  This may show a better picture of the data collected.
+
+###All Pedons
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+osdkrep <- osd
+
+# first obtain a mean of all measurements within a horizon
+k_hz_rep <- select(h, peiid, pedon_id, hzname, phiid, genhz, hzdept, hzdepb, sathydcondrepmean, sathydcondrepstd, phksatamoozemeteriid, repnum, boreholedepth)
+k_hz_rep <- distinct(k_hz_rep)
+k_hz_rep <- mutate(k_hz_rep, mhzd = (hzdept + hzdepb)/2)
+k_hz_rep_m <- k_hz_rep %>% group_by(phiid, pedon_id, hzname, genhz, hzdept, hzdepb, mhzd) %>% summarize(minhksat = min(sathydcondrepmean), mhksat = mean(sathydcondrepmean), maxhksat = max(sathydcondrepmean))
+
+ggplot(k_hz_rep_m) +
+  geom_rect(aes(xmin = k_hz_rep_m$hzdept, ymin = k_hz_rep_m$minhksat, xmax = k_hz_rep_m$hzdepb, ymax = k_hz_rep_m$maxhksat), alpha = 0.25) +
+  geom_text(aes(y = k_hz_rep_m$mhksat, x = k_hz_rep_m$mhzd, label = k_hz_rep_m$hzname), size = 4, hjust = 0, nudge_y = .1) +
+  coord_flip() +
+  scale_x_reverse() +
+  geom_step(direction = "vh", aes(y = k_hz_rep_m$mhksat, x = k_hz_rep_m$hzdept)) +
+  geom_step(aes(y = k_hz_rep_m$mhksat, x = k_hz_rep_m$hzdepb)) +
+  geom_point(aes(y = k_hz_rep_m$mhksat, x = k_hz_rep_m$mhzd), color = "red") +
+  facet_wrap(~ k_hz_rep_m$pedon_id) +
+  labs(title = "Pedon Horizon Ksat Amoozemeter Table by Pedon", y = expression(paste(K[sat]," (micrometers/second)")), x = "Depth (cm)") +
+  expand_limits(y = k_hz_rep_m$mhksat*10) +
+  scale_y_log10(breaks = c(0, 0.01, 0.1, 1, 10, 100))
+```
+
+###Generalized Pedon
+
+Each repetition contains a borehole depth so rather than plotting the values at the middle of the horizon, as estimated in the previous plots, the plot below uses the borehole depth.  Again this is useful to get a better understanding of the data.
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE, fig.show='hold', out.width = '50%'}
+k_hz_rep_m_gn <- k_hz_rep_m %>% group_by(genhz) %>% summarize(min = min(minhksat), avg = mean(mhksat), max = max(maxhksat), n = n())
+
+osdkrep@horizons <- mutate(osdkrep@horizons, genhz = gsub("\\d$", "", osdkrep@horizons$hzname))
+
+osdkrepm <- inner_join(osdkrep@horizons, k_hz_rep_m_gn, by = "genhz")
+
+hkrepmax <- max(k_hz_rep_m_gn$max)
+hkrepmin <- min(k_hz_rep_m_gn$min)
+
+dptkrepm <- ggplot() +
+    geom_rect(aes(xmin = osdkrepm$top, ymin = osdkrepm$min, xmax = osdkrepm$bottom, ymax = osdkrepm$max), alpha = 0.25) +
+  geom_text(aes(y = osdkrepm$avg, x = (osdkrepm$top+osdkrepm$bottom)/2, label = osdkrepm$hzname), size = 6) +
+  coord_flip() +
+  scale_x_reverse() +
+  geom_step(direction = "vh", aes(y = osdkrepm$avg, x = osdkrepm$top), color = "red") +
+    geom_step(aes(y = osdkrepm$avg, x = osdkrepm$bottom), color = "red") +
+
+  labs(title = "Generalized Data from Pedon Horizon Ksat Amoozemeter Table", y = expression(paste(K[sat]," (micrometers/second)")), x = "Depth (cm)") +
+  theme(axis.text=element_text(size=16), legend.text = element_text(size = 14), plot.title = element_text(size = 11), legend.title = element_text( size = 16),  legend.position="left", plot.margin = unit(c(0,0.5,0,0), "cm")) +
+  geom_point(aes(x = (k_hz_rep$boreholedepth), y = k_hz_rep$sathydcondrepmean, color = as.factor(k_hz_rep$genhz), shape = as.factor(k_hz_rep$repnum)), size = 2) +
+  scale_color_discrete(name = "Generalized \n Horizons") +
+  scale_shape_discrete(name = "Measurement \n Repetitions") +
+  expand_limits(x = 200) +
+  expand_limits(x = 0) +
+  scale_y_log10(breaks = c(0, 0.01, 0.1, 1, 10, 100))
+
+
+dptkrepm
+
+plot(osd, cex.names = 1, x.idx.offset = -.1, max.depth = 200, plot.depth.axis=TRUE, par(mar= c(2.5,0,0,4)))
+```
+
+##Pedon Horizon Ksat Amoozemeter Data
+
+Each repetition contains individual measurements.  Looking at these values helps to explain the calculated means provided for each repetition.  Note not all pedons may have individual readings populated.
+
+###All Pedons
+
+```{r warning = FALSE, message = FALSE, echo = FALSE}
+
+# first obtain a mean of all measurements within a horizon
+k_hz_ind <- select(h, peiid, pedon_id, hzname, phiid, genhz, hzdept, hzdepb, sathydcondmeasured, peksatamoozedataiid, ksatreadingnum, boreholedepth, steadystateflag, repnum)
+k_hz_ind <- distinct(k_hz_ind)
+k_hz_ind <- filter(k_hz_ind, !is.na(sathydcondmeasured))
+k_hz_ind <- mutate(k_hz_ind, mhzd = (hzdept + hzdepb)/2)
+k_hz_ind_m <- k_hz_ind %>% group_by(phiid, pedon_id, hzname, genhz, hzdept, hzdepb, mhzd) %>% summarize(minhksat = min(sathydcondmeasured), mhksat = mean(sathydcondmeasured), maxhksat = max(sathydcondmeasured))
+
+k_hz_ind_m_gn <- k_hz_ind_m %>% group_by(genhz) %>% summarize(min = min(minhksat), avg = mean(mhksat), max = max(maxhksat), n = n())
+
+try(
+  ggplot(k_hz_ind_m) +
+  geom_rect(aes(xmin = k_hz_ind_m$hzdept, ymin = k_hz_ind_m$minhksat, xmax = k_hz_ind_m$hzdepb, ymax = k_hz_ind_m$maxhksat), alpha = 0.25) +
+  geom_text(aes(y = k_hz_ind_m$mhksat, x = k_hz_ind_m$mhzd, label = k_hz_ind_m$hzname), size = 4, hjust = 0, nudge_y = .1) +
+  coord_flip() +
+  scale_x_reverse() +
+  geom_step(direction = "vh", aes(y = k_hz_ind_m$mhksat, x = k_hz_ind_m$hzdept)) +
+  geom_step(aes(y = k_hz_ind_m$mhksat, x = k_hz_ind_m$hzdepb)) +
+  geom_point(aes(y = k_hz_ind_m$mhksat, x = k_hz_ind_m$mhzd), color = "red") +
+  facet_wrap(vars(k_hz_ind_m$pedon_id), ncol = 4) +
+  labs(title = "Pedon Horizon Ksat Amoozemeter Data Table by Pedon", y = expression(paste(K[sat]," (micrometers/second)")), x = "Depth (cm)") +
+  expand_limits(y = k_hz_ind_m$mhksat*10, x = c(0,200)) +
+  scale_y_log10(breaks = c(0, 0.01, 0.1, 1, 10, 100))
+, silent = TRUE)
+```
+
+###Generalized Pedon
+
+Individual measurements are collected but only those which are considered "steady state" are used in calculating means in the NASIS tables above.  Measurements which are not steady state are shown at 50% transparent, along with steady state readings which have no transparency in the plot below.  Measurements are also grouped by the pedon horizon tested which corresponds to the shapes in the plot.  Finally, the color shows the generalized horizons to which the measurements were assigned.
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE, fig.show='hold', out.width = '50%'}
+osdkind <- osd
+
+
+osdkind@horizons <- mutate(osdkind@horizons, genhz = gsub("\\d$", "", osdkind@horizons$hzname))
+
+osdkind <- inner_join(osdkind@horizons, k_hz_ind_m_gn, by = "genhz")
+
+kindhmax <- max(max(h$sathydcondmeasured), max(h$sathydcondrepmean), max(h$sathydcondmean))
+kindhmin <- min(min(h$sathydcondmeasured), min(h$sathydcondrepmean), min(h$sathydcondmean))
+
+dptkind <- ggplot() +
+    geom_rect(aes(xmin = osdkind$top, ymin = osdkind$min, xmax = osdkind$bottom, ymax = osdkind$max), alpha = 0.25) +
+  geom_text(aes(y = osdkind$avg, x = (osdkind$top+osdkind$bottom)/2, label = osdkind$hzname), size = 6) +
+  coord_flip() +
+  scale_x_reverse() +
+  geom_step(direction = "vh", aes(y = osdkind$avg, x = osdkind$top), color = "red") +
+    geom_step(aes(y = osdkind$avg, x = osdkind$bottom), color = "red") +
+
+  labs(title = "Generalized Data from Pedon Horizon Ksat Amoozemeter Data Table", y = expression(paste(K[sat]," (micrometers/second)")), x = "Depth (cm)") +
+  theme(axis.text=element_text(size=16), legend.text = element_text(size = 14), plot.title = element_text(size = 10), legend.title = element_text( size = 16),  legend.position="left", plot.margin = unit(c(0,0.5,0,0), "cm")) +
+  geom_point(aes(x = (k_hz_ind$boreholedepth), y = k_hz_ind$sathydcondmeasured, alpha = as.factor(k_hz_ind$steadystateflag), color = k_hz_ind$genhz, shape = as.factor(k_hz_ind$repnum)) ,size = 2.25) +
+  scale_color_discrete(name = "Generalized \n Horizons") +
+  scale_shape_discrete(name = "Measurement \n Repetitions") +
+  scale_alpha_discrete(name = "Steady State", range = c(.5, 1), labels = c("No", "Yes")) +
+  expand_limits(x = 200) +
+  expand_limits(x = 0) +
+  scale_y_log10(breaks = c(0, 0.01, 0.1, 1, 10, 100))
+
+
+  
+dptkind
+
+plot(osd, cex.names = 1, x.idx.offset = -.1, max.depth = 200, plot.depth.axis=TRUE, par(mar= c(2.5,0,0,4)))
+```

@@ -1,0 +1,228 @@
+---
+output: html_document
+params:
+  mlrassoarea:
+    label: "Soil Survey Area Symbol:"
+    value: "11-UNI"
+  fiscalyear:
+    label: "Fiscal Year"
+    value: "2019"
+---
+
+# Project Impact Score
+
+## Concept
+
+Measuring the impact of a project can evaluated using 5 different metrics:
+
+*	\# of Area Symbols which contain the polygons affected (N)
+*	\# of National Mapunit Symbols altered (M)
+*	\# of Polygons changed (P)
+*	\# of Acres updated (A)
+*	\# of people in updated area (H)
+
+Using the factors together as a contribution to the total impact, a simple equation can be represented as shown:
+
+$$N+M+P+A+H=I$$
+
+Each of the above values from a single project must compared to the total amount in existence within the Soil Survey Office Area to determine a relative impact across the area.  Then each value is multiplied by a factor of 20 to normalize the values on a scale from 0 - 100.  The zero value representing a project with the least impact and 100 the most.  See equation below:
+
+$$\left\{ \left( N_\rho\over \sum N \right) \times 20 \right\} + \left\{ \left( M_\rho\over \sum M \right) \times 20 \right\} + \left\{ \left( P_\rho\over \sum P \right) \times 20 \right\} + \left\{ \left( A_\rho\over \sum A \right) \times 20 \right\} + \left\{ \left( H_\rho\over \sum H \right) \times 20 \right\} = I$$
+
+
+## Examples
+
+Let's look at some examples:
+
+### Example #1 (Clinton, Missouri)
+
+MLRA 112 - Zaar silty clay, 1 to 3 percent slopes
+
+$$\left\{ \left( 9\over 61 \right) \times 20 \right\} + \left\{ \left( 2\over 2841 \right) \times 20 \right\} + \left\{ \left( 2193\over 261662 \right) \times 20 \right\} + \left\{ \left( 126454\over 14686292 \right) \times 20 \right\} + \left\{ \left( 156388\over 3910405 \right) \times 20 \right\} = 4.10$$
+
+Results for each factor:
+
+$$\{2.95\}+\{0.01\}+\{0.17\}+\{0.17\}+\{0.80\}=4.10$$
+
+As you can see, the number of area symbols in a project greatly influences the result.
+
+### Example #2 (Union, Missouri)
+
+MLRA 115B - Alluvial map units and hydric classifications within St Louis
+
+$$\left\{ \left( 7\over 48 \right) \times 20 \right\} + \left\{ \left( 3\over 2976 \right) \times 20 \right\} + \left\{ \left( 241\over 189620 \right) \times 20 \right\} + \left\{ \left( 46776\over 8899209 \right) \times 20 \right\} + \left\{ \left( 4584762\over 5022683 \right) \times 20 \right\} = 21.32$$
+
+Results of each factor:
+
+$$\{2.92\}+\{0.02\}+\{0.03\}+\{0.11\}  +\{18.26\}=21.32$$
+
+## Discussion
+
+What can we use a project impact score for?  The PIS can be used as a tool to help with ranking the importance of a project.  It could also be useful for justifying a lower acreage project.  Another potential use for the PIS is for region-wide planning.  A high PIS means more SDQS workload.  The PIS could also help keep projects within an office balanced with equal high and low impact projects addressed each year.
+
+There are several drawbacks with this method of determining impact.  The most obvious is the tendency for each metric to be related (If you have every acre of your whole area in a project, you'll obviously also have every polygon, every mapunit and every area symbol in it as well).  So in theory, a project with these values would have a PIS of 100.  On the other hand you could have a very small acreage project with at least one polygon in each area symbol and end up with a PIS of just over 20.  
+
+It is also important to note, there are many other metrics which could be (and maybe should be) included in this calculation, such as amount of soils data updated, the egregiousness of the errors fixed, land use changes and so on.  However, the metrics included in this formula were easy to obtain and although not comprehensive, has value in understanding and comparing projects throughout the region.  
+
+My recommendations for Region-wide planning:  Encourage at least one MLRA project each year in each office with a PIS of ~10.  Encourage ~50% of EVAL projects to have PIS > 0.50.  This is just a general recommendation and expert judgement will also be needed on a case by case basis.
+
+## Data Output
+
+This data below is from `r params$mlrassoarea` and represents projects in `r params$fiscalyear`.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+```{r load libraries}
+#### THIS SCRIPT IS FOR GENERATING PROJECT IMPACT SCORES FOR AN INDIVIDUAL SSO IN REGION 11 FOR A GIVEN FISCAL YEAR
+
+# Load libraries
+library(soilDB)
+library(sp)
+library(plyr)
+library(sf)
+library(dplyr)
+library(stringr)
+library(cdlTools)
+library(tidyverse)
+library(tidycensus)
+library(purrr)
+library(DT)
+```
+
+```{r gather_data}
+### STEP 1. GATHER DATA FOR ANALYSIS
+
+# a. Get Projects from LIMS
+pi <- parseWebReport("https://nasis.sc.egov.usda.gov/NasisReportsWebSite/limsreport.aspx?report_name=get_project_from_LIMS", args = list(p_mlrassoarea = params$mlrassoarea, p_fy = params$fiscalyear))
+
+# b. Get MUKEYS from LIMS
+polys <- parseWebReport('https://nasis.sc.egov.usda.gov/NasisReportsWebSite/limsreport.aspx?report_name=WEB-PROJECT_MUKEY_BY_GOAL_YEAR', args = list(msso = params$mlrassoarea, fy = params$fiscalyear, asym='%', proj='0'))
+
+# c. Get Population Data from US Census
+census_api_key("INSERTKEY")
+
+us <- unique(fips_codes$state)[1:51]
+
+totalpop <- map_df(us, function(x) {
+  get_acs(geography = "county", variables = "B01003_001", 
+          state = x)
+})
+
+# d. Get Spatial Data (can only handle one SSO at a time)
+ssmu <- read_sf(dsn = paste0("E:/geodata/project_data/11", str_sub(params$mlrassoarea, -3, -1), "/RTSD_MLRA_11-", str_sub(params$mlrassoarea, -3, -1), "_FY18.gdb"), layer = "MUPOLYGON")
+
+# e. Get custom CSV with SSO and Region 11 totals
+tsso <- read.csv("c:/workspace2/impact_data.csv")
+```
+
+```{r clean_data}
+
+### STEP 2. CLEAN DATA
+
+## CLEAN MUKEY DATA FROM LIMS (polys)
+
+# a. rename columns
+names(polys) <- make.names(names(polys))
+
+# b. remove description column (it's full of NAs anyway since we specifically asked not to return it in the above query)
+polys$Description <- NULL
+
+# c. make an index for removing unwanted project types
+idx <- grep("EVAL|SDJR|MLRA", polys$Project.Type.Name)
+
+# d. keep the only the rows matching the index
+polys <- polys[idx, ]
+
+# e. rename column 10 FIPS (there was a duplicate Area.Symbol name generated earlier)
+colnames(polys)[10] <- "FIPS"
+
+# f. make a new column of GEOID (state and county fips) using FIPS column and fips function
+polys$GEOID <- paste0(fips(substr(polys$FIPS, 1,2)), str_sub(polys$FIPS, -3, -1))
+
+# g. make an index for removing unwanted population data
+idx3 <- grep(paste(polys$GEOID, collapse = "|"), totalpop$GEOID)
+
+# h. keep only the rows matching the index
+totalpop <- totalpop[idx3, ]
+
+# i. convert to data.frame
+totalpop <- as.data.frame(totalpop)
+
+# j. join polys data and population data by GEOID
+polypop <- left_join(polys, totalpop, by = "GEOID")
+
+# k. sum the total population for each project
+prpop <- aggregate(polypop$estimate, by = list(projectname = polypop$Project.Name), FUN = sum)
+
+# l. rename column for joining later on
+colnames(prpop)[2] <- "population"
+
+
+## CLEAN SPATIAL DATA (ssmu)
+
+# a. make an index for removing unwanted polygons
+idx2 <- grep(paste(polys$mukey, collapse = "|"), ssmu$MUKEY)
+
+# b. keep only the rows matching the index
+ssmu <- ssmu[idx2, ]
+
+# c. rename column for joining
+colnames(ssmu)[3] <- "mukey"
+
+# d. join project names with polygons in spatial data
+ssmu_poly <- merge(ssmu, polys[, c("mukey", "Project.Name")], by = "mukey")
+
+# e. remove geometry (we don't need it)
+ssmu_poly$geometry <- NULL
+
+# f. return a count of the polygons in each project
+sm_ssmu_poly <- count(ssmu_poly, Project.Name)
+
+# g. rename columns in the combined polygons data (ssmu) for joining later on
+sm_ssmu_poly$projectname <- sm_ssmu_poly$Project.Name
+sm_ssmu_poly$polygons <- sm_ssmu_poly$n
+```
+
+```{r combine_data}
+
+### STEP 3. COMBINE PROJECT DATA TO SSO TOTALS DATA CALCULATE IMPACT SCORE AND DISPLAY RESULTS
+
+# a. rename column in SSO totals (tsso) for joining
+tsso$mlrassoarea <- as.character(tsso$Office.Area)
+
+# b. join project data and totals
+pd_tls <- merge(pi, tsso[, c("mlrassoarea", "Total.Area.SYMS", "Total.NATSYMS", "Total.Polygons", "Total.Acres", "total.population")], by = "mlrassoarea")
+ 
+# c. join spatial data and project data together
+sm_ssmu_poly <- merge(sm_ssmu_poly, prpop[, c("projectname","population")], by = "projectname")
+
+# d. join totals data and sso data together
+imp_d <- merge(pd_tls, sm_ssmu_poly[, c("projectname", "polygons", "population")], by = "projectname")
+
+# e. calculate weighted impact factors
+imp_d$im_asym <- (imp_d$n_areasymbol / imp_d$Total.Area.SYMS) * 20
+imp_d$im_natsym <- (imp_d$n_nationalmusym / imp_d$Total.NATSYMS) * 20
+imp_d$im_poly <- ( imp_d$polygons / imp_d$Total.Polygons) * 20
+imp_d$im_acres <- (imp_d$acre_landcat / imp_d$Total.Acres) * 20
+imp_d$im_popu <- (imp_d$population / imp_d$total.population) * 20
+
+# f. sum the individual factors
+imp_d$impact_score <- imp_d$im_asym + imp_d$im_natsym + imp_d$im_poly + imp_d$im_acres + imp_d$im_popu
+
+# g. keep only the columns needed
+final_d <- imp_d[, c(2, 1, 34,35,36,37,38,39)]
+
+# h. round values for easier reading
+final_d[, c(-1,-2)] <- round(final_d[, c(-1, -2)], 2)
+
+# i. save file to .csv
+write.csv(final_d, paste0(final_d$mlrassoarea[1], "_imp_score", ".csv"))
+
+# j. make a DT data table
+final_dt <- datatable(final_d)
+
+# k. display table
+final_dt
+```
