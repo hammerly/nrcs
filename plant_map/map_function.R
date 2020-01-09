@@ -9,7 +9,7 @@ ustermap <- function (data, area) {
   
   us <- st_read(area, stringsAsFactors = FALSE)
   us <- st_transform(us, 4326)
-  aevi <- read_csv(data)
+  aevi <- read_csv(data, col_types = cols(lat = col_double(), long = col_double()))
   
   t <- na.omit(aevi)
   
