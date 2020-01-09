@@ -4,7 +4,7 @@ library(purrr)
 
 # Population Data
 
-census_api_key("INSERTKEY")
+census_api_key("02f3fa45f183f3343f69234d1f329a2c3cb294c8")
 
 us <- unique(fips_codes$state)[1:51]
 

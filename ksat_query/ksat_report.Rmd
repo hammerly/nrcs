@@ -3,8 +3,8 @@ title: "Pedon Horizon Saturated Hydraulic Conductivity Report"
 author: "`r Sys.getenv('USERNAME')`"
 date: "`r Sys.Date()`"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
   word_document: default
 ---
 
@@ -105,7 +105,7 @@ kable(lhw)
 
 **`r ckp`** pedon(s) contain measured $K_{sat}$ data.  Note some pedons may not plot due to missing horizon data.
 
-```{r echo = FALSE, message = FALSE}
+```{r echo=FALSE, fig.height=5, fig.width=10, message=, warning=FALSE}
 
 # Plot pedon profiles
 plot(s, label = "pedon_id")

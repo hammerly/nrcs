@@ -1,0 +1,94 @@
+Column1,mlrassoarea,projectname,im_asym,im_natsym,im_poly,im_acres,im_popu,impact_score,Recommended
+42,11-WAV,"EVAL - MLRA 104 - Spillville loam, 0 to 2 percent slopes, occasionally flooded",9.29,0.09,0.08,0.08,9.19,18.71,x
+92,11-WAV,"MLRA 104 - Fen Identification, Histosol Recorrelation",8.93,0.11,0.04,0.02,8.71,17.81,x
+93,11-WAV,MLRA 108C - Garwin soils,7.14,0.02,0.15,0.19,7.66,15.16,x
+50,11-WAV,"EVAL - MLRA 108C - Ackmore silt loam, 0 to 2 percent slopes, occasionally flooded",4.29,0.04,0.03,0.07,3.45,7.87,x
+60,11-WAV,"EVAL - MLRA 108C - Lawson silt loam, 0 to 2 percent slopes, occasionally flooded",3.21,0.03,0.02,0.03,3.14,6.42,x
+87,11-WAV,"EVAL - MLRA 108C - Zook silty clay loam, 0 to 2 percent slopes, occasionally flooded",3.57,0.03,0.03,0.06,2.39,6.09,x
+14,11-WAV,"EVAL - MLRA 104 - Lourdes loam, 2 to 5 percent slopes",2.86,0.02,0.04,0.02,1.43,4.37,x
+19,11-WAV,"EVAL - MLRA 104 - Protivin loam, 1 to 4 percent slopes",2.5,0.02,0.05,0.04,1.37,3.99,x
+7,11-WAV,"EVAL - MLRA 104 - Coland clay loam, 0 to 2 percent slopes, occasionally flooded",2.14,0.02,0.02,0.05,1.62,3.85,x
+47,11-WAV,"EVAL - MLRA 104 - Vesser silt loam, 0 to 2 percent slopes",2.5,0.02,0.01,0.01,1.11,3.64,x
+27,11-WAV,"EVAL - MLRA 104 - Racine loam, 2 to 5 percent slopes",2.14,0.02,0.06,0.04,1.07,3.34,x
+10,11-WAV,"EVAL - MLRA 104 - Cresco loam, 2 to 5 percent slopes",2.5,0.02,0.04,0.06,0.64,3.26,x
+16,11-WAV,"EVAL - MLRA 104 - Lourdes loam, 5 to 9 percent slopes, moderately eroded",1.79,0.02,0.01,0,1.15,2.96,x
+11,11-WAV,"EVAL - MLRA 104 - Cresco loam, 5 to 9 percent slopes",2.14,0.02,0.02,0.01,0.51,2.69,x
+8,11-WAV,"EVAL - MLRA 104 - Coland silty clay loam, 0 to 2 percent slopes, occasionally flooded",1.43,0.02,0.01,0.01,1.15,2.62,x
+59,11-WAV,"EVAL - MLRA 108C - Lawson-Quiver-Nodaway complex, 0 to 2 percent slopes, occasionally flooded",1.79,0,0.01,0.05,0.66,2.51,x
+6,11-WAV,"EVAL - MLRA 104 - Coland-Spillville complex, channeled, 0 to 2 percent slopes",1.79,0.02,0.01,0.04,0.43,2.29,x
+29,11-WAV,"EVAL - MLRA 104 - Racine loam, 5 to 9 percent slopes, moderately eroded",1.43,0.01,0.01,0.01,0.82,2.28,x
+69,11-WAV,"EVAL - MLRA 108C - Olmitz loam, 2 to 5 percent slopes",1.43,0.02,0.01,0.01,0.79,2.25,x
+43,11-WAV,"EVAL - MLRA 104 - Spillville loam, channeled, 0 to 2 percent slopes",1.07,0.01,0,0,1.15,2.24,x
+15,11-WAV,"EVAL - MLRA 104 - Lourdes loam, 5 to 9 percent slopes",1.79,0.02,0.01,0,0.42,2.23,x
+26,11-WAV,"EVAL - MLRA 104 - Racine loam, 12 to 18 percent slopes, eroded",0.71,0.01,0.01,0,1.33,2.06,x
+70,11-WAV,"EVAL - MLRA 108C - Olmitz loam, 5 to 9 percent slopes",1.43,0.01,0.01,0,0.54,1.99,x
+91,11-WAV,"EVAL - MLRA 108C - Zook silty clay, 0 to 2 percent slopes, occasionally flooded",1.43,0.01,0.01,0,0.5,1.95,x
+34,11-WAV,"EVAL - MLRA 104 - Racine silt loam, 6 to 12 percent slopes",0.71,0.01,0.01,0.01,1.17,1.91,x
+51,11-WAV,"EVAL - MLRA 108C - Ackmore silt loam, 2 to 5 percent slopes, occasionally flooded",0.71,0.01,0,0.01,1.16,1.89,x
+28,11-WAV,"EVAL - MLRA 104 - Racine loam, 5 to 9 percent slopes",1.07,0.01,0.01,0,0.75,1.84,x
+61,11-WAV,"EVAL - MLRA 108C - Lawson silt loam, channeled, 0 to 2 percent slopes",0.71,0.01,0,0,1.02,1.75,x
+82,11-WAV,"EVAL - MLRA 108C - Vesser silt loam, 2 to 5 percent slopes",1.07,0.01,0.01,0.01,0.51,1.6,x
+54,11-WAV,"EVAL - MLRA 108C - Ambraw-Perks-Lawson complex, frequently flooded, 0 to 2 percent slopes",0.36,0,0,0.01,1.05,1.43,x
+58,11-WAV,"EVAL - MLRA 108C - Colo-Zook complex, 0 to 5 percent slopes",1.07,0.01,0.01,0.02,0.31,1.41,x
+40,11-WAV,"EVAL - MLRA 104 - Spillville-Hanlon-Coland complex, channeled, 0 to 3 percent slopes",1.07,0.01,0.01,0.01,0.27,1.37,x
+12,11-WAV,"EVAL - MLRA 104 - Cresco loam, 5 to 9 percent slopes, moderately eroded",1.07,0.01,0.01,0.01,0.26,1.36,x
+31,11-WAV,"EVAL - MLRA 104 - Racine silt loam, 1 to 6 percent slopes",0.36,0,0.02,0.02,0.93,1.32,x
+44,11-WAV,EVAL - MLRA 104 - Spillville silt loam,0.36,0,0,0,0.93,1.3,x
+65,11-WAV,"EVAL - MLRA 108C - Nodaway-Arenzville silt loams, 1 to 4 percent slopes",0.36,0,0.01,0.02,0.89,1.27,x
+55,11-WAV,"EVAL - MLRA 108C - Arenzville silt loam, 0 to 2 percent slopes",0.36,0,0,0,0.89,1.26,x
+52,11-WAV,"EVAL - MLRA 108C - Amana-Lawson-Perks complex, 0 to 2 percent slopes",0.36,0,0,0,0.89,1.25,x
+38,11-WAV,"EVAL - MLRA 104 - Spillville-Coland, channeled-Aquolls, ponded, complex, 0 to 2 percent slopes, frequently flooded",0.36,0,0,0.03,0.82,1.21,x
+9,11-WAV,"EVAL - MLRA 104 - Coland, occasionally flooded-Urban land complex, 0 to 2 percent slopes",0.36,0,0,0,0.82,1.18,x
+17,11-WAV,"EVAL - MLRA 104 - Protivin-Urban land complex, 1 to 3 percent slopes",0.36,0,0,0,0.82,1.18,x
+46,11-WAV,"EVAL - MLRA 104 - Spillville, occasionally flooded-Coland, occasionally flooded-Urban land complex, 0 to 2% slopes",0.36,0,0,0,0.82,1.18,x
+1,11-WAV,"EVAL - MLRA 104 - Bassett-Racine complex, 12 to 18 percent slopes, eroded",0.71,0.01,0.01,0.01,0.41,1.15,x
+2,11-WAV,"EVAL - MLRA 104 - Bassett-Racine complex, 18 to 25 percent slopes",0.71,0.01,0.01,0,0.41,1.14,x
+75,11-WAV,"EVAL - MLRA 108C - Radford silt loam, 0 to 2 percent slopes",0.71,0.01,0,0.01,0.4,1.13,x
+68,11-WAV,"EVAL - MLRA 108C - Nodaway-Vesser silt loams, 2 to 5 percent slopes",0.71,0.01,0.01,0.01,0.34,1.08,x
+32,11-WAV,"EVAL - MLRA 104 - Racine silt loam, 2 to 5 percent slopes",0.71,0.01,0.03,0.01,0.31,1.07,x
+30,11-WAV,"EVAL - MLRA 104 - Racine silt loam, 0 to 2 percent slopes",0.71,0.01,0.02,0.01,0.31,1.05,x
+18,11-WAV,"EVAL - MLRA 104 - Protivin clay loam, 1 to 4 percent slopes",0.71,0.01,0.02,0.02,0.19,0.95,x
+81,11-WAV,"EVAL - MLRA 108C - Vesser silt loam, 0 to 2 percent slopes, occasionally flooded",0.71,0.01,0,0,0.16,0.89,x
+84,11-WAV,"EVAL - MLRA 108C - Zook silt loam, 0 to 2 percent slopes, occasionally flooded, overwash",0.71,0.01,0,0,0.16,0.89,x
+25,11-WAV,"EVAL - MLRA 104 - Racine loam, 0 to 2 percent slopes",0.71,0.01,0.01,0,0.15,0.88,x
+36,11-WAV,"EVAL - MLRA 104 - Racine silt loam, moderately wet, 6 to 12 percent slopes, eroded",0.36,0,0.01,0.01,0.4,0.78,x
+35,11-WAV,"EVAL - MLRA 104 - Racine silt loam, moderately wet, 2 to 6 percent slopes",0.36,0,0.01,0.01,0.4,0.77,x
+3,11-WAV,"EVAL - MLRA 104 - Coland-Hanlon complex, 0 to 2 percent slopes",0.36,0,0,0,0.26,0.63,x
+4,11-WAV,"EVAL - MLRA 104 - Coland-Hanlon complex, channeled, 0 to 2 percent slopes",0.36,0,0,0,0.26,0.63,x
+56,11-WAV,"EVAL - MLRA 108C - Coland clay loam, 2 to 5 percent slopes",0.36,0,0,0,0.26,0.63,x
+74,11-WAV,"EVAL - MLRA 108C - Radford-Hanlon silt loams, channeled, 0 to 2 percent slopes",0.36,0,0,0.01,0.26,0.63,x
+77,11-WAV,"EVAL - MLRA 108C - Radford silt loam, 2 to 5 percent slopes",0.36,0,0,0.01,0.26,0.63,x
+57,11-WAV,"EVAL - MLRA 108C - Colo-Hanlon-Lawson complex, channeled, 0 to 2 percent slopes",0.36,0,0,0.01,0.25,0.62,x
+20,11-WAV,EVAL - MLRA 104 - Protivin silt loam,0.36,0,0,0,0.24,0.61,x
+62,11-WAV,"EVAL - MLRA 108C - Lawson silty clay loam, 0 to 2 percent slopes",0.36,0,0,0,0.25,0.61,x
+71,11-WAV,"EVAL - MLRA 108C - Olmitz variant loam, 2 to 5 percent slopes",0.36,0,0,0,0.24,0.61,x
+72,11-WAV,"EVAL - MLRA 108C - Olmitz variant loam, 5 to 10 percent slopes",0.36,0,0,0,0.24,0.61,x
+23,11-WAV,"EVAL - MLRA 104 - Racine and Ostrander silt loams, 2 to 6 percent slopes",0.36,0,0.01,0.03,0.13,0.53,x
+45,11-WAV,"EVAL - MLRA 104 - Spillville, channeled-Coland, channeled-Aquolls, ponded, complex, 0 to 2 percent slopes, freq flooded",0.36,0,0,0.01,0.15,0.52,x
+66,11-WAV,"EVAL - MLRA 108C - Nodaway-Radford silt loams, 2 to 5 percent slopes",0.36,0,0,0,0.16,0.52,x
+49,11-WAV,"EVAL - MLRA 108C - Ackmore-Nodaway silt loams, 2 to 5 percent slopes",0.36,0,0.01,0.01,0.14,0.51,x
+85,11-WAV,"EVAL - MLRA 108C - Zook silt loam, overwash, 0 to 2 percent slopes",0.36,0,0,0,0.14,0.51,x
+22,11-WAV,"EVAL - MLRA 104 - Racine and Ostrander silt loams, 0 to 1 percent slopes",0.36,0,0,0.01,0.13,0.5,x
+78,11-WAV,"EVAL - MLRA 108C - Spillville loam, sandy substratum, 0 to 2 percent slopes",0.36,0,0,0,0.14,0.5,x
+88,11-WAV,"EVAL - MLRA 108C - Zook silty clay loam, 2 to 5 percent slopes",0.36,0,0,0,0.14,0.5,x
+89,11-WAV,"EVAL - MLRA 108C - Zook silty clay loam, depressional, 0 to 1 percent slopes",0.36,0,0,0,0.14,0.5,x
+21,11-WAV,"EVAL - MLRA 104 - Racine and Ostrander loams, 12 to 17 percent slopes, moderately eroded",0.36,0,0,0,0.13,0.49,
+24,11-WAV,"EVAL - MLRA 104 - Racine and Ostrander silt loams, 7 to 11 percent slopes, moderately eroded",0.36,0,0,0,0.13,0.49,
+79,11-WAV,"EVAL - MLRA 108C - Vesser-Colo complex, 2 to 5 percent slopes",0.36,0,0,0,0.12,0.49,
+39,11-WAV,"EVAL - MLRA 104 - Spillville-Hanlon-Coland complex, 0 to 3 percent slopes, frequently flooded",0.36,0.01,0,0.01,0.11,0.48,
+48,11-WAV,"EVAL - MLRA 108C - Ackmore-Colo complex, 0 to 2 percent slopes",0.36,0,0,0,0.11,0.48,
+64,11-WAV,"EVAL - MLRA 108C - Nodaway-Ackmore silt loams, channeled, 0 to 2 percent slopes",0.36,0,0,0,0.11,0.48,
+67,11-WAV,"EVAL - MLRA 108C - Nodaway-Vesser-Ackmore complex, 0 to 2 percent slopes",0.36,0,0,0.01,0.11,0.48,
+73,11-WAV,"EVAL - MLRA 108C - Quiver-Zook-Klum complex, 0 to 2 percent slopes, frequently flooded",0.36,0,0,0.02,0.1,0.48,
+76,11-WAV,"EVAL - MLRA 108C - Radford silt loam, 0 to 2 percent slopes, occasionally flooded",0.36,0,0,0,0.11,0.48,
+5,11-WAV,"EVAL - MLRA 104 - Coland-Spillville-Hanlon complex, 0 to 2 percent slopes",0.36,0,0,0,0.11,0.47,
+53,11-WAV,"EVAL - MLRA 108C - Amana-Nodaway-Lawson complex, 0 to 2 percent slopes, occasionally flooded",0.36,0,0,0,0.1,0.47,
+90,11-WAV,"EVAL - MLRA 108C - Zook silty clay, 0 to 2 percent slopes",0.36,0,0,0,0.11,0.47,
+41,11-WAV,"EVAL - MLRA 104 - Spillville-Udifluvents complex, channeled, 0 to 2 percent slopes",0.36,0,0,0.01,0.07,0.45,
+63,11-WAV,"EVAL - MLRA 108C - Nodaway-Ackmore-Vesser complex, 0 to 2 percent slopes, occasionally flooded",0.36,0,0,0.01,0.06,0.44,
+13,11-WAV,"EVAL - MLRA 104 - Lawson-Ossian complex, 0 to 4 percent slopes",0.36,0,0,0,0.07,0.43,
+33,11-WAV,"EVAL - MLRA 104 - Racine silt loam, 5 to 9 percent slopes",0.36,0,0,0,0.07,0.43,
+83,11-WAV,"EVAL - MLRA 108C - Vesser silt loam, 2 to 5 percent slopes, rarely floodedd",0.36,0,0,0,0.06,0.43,
+37,11-WAV,EVAL - MLRA 104 - Radford silt loam,0.36,0,0,0,0.06,0.42,
+80,11-WAV,"EVAL - MLRA 108C - Vesser silt loam, 0 to 2 percent slopes, frequently flooded",0.36,0,0,0,0.06,0.42,
+86,11-WAV,"EVAL - MLRA 108C - Zook silty clay loam, 0 to 2 percent slopes, frequently flooded",0.36,0,0,0,0.06,0.42,

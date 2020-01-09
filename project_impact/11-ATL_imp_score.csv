@@ -1,0 +1,29 @@
+Column1,mlrassoarea,projectname,im_asym,im_natsym,im_poly,im_acres,im_popu,impact_score,Recommended
+28,11-ATL,"MLRA 108D - Nodaway silt loam, 0 to 2 percent slopes, occasionally flooded",9.84,0,0.08,0.19,10.3,20.41,x
+8,11-ATL,"EVAL - MLRA 107B - Blencoe silt clay, 0 to 2 percent slopes, rarely flooded",2.62,0.04,0.01,0.04,1.51,4.23,x
+12,11-ATL,"EVAL - MLRA 107B - Clarinda silty clay loam, 5 to 9 percent slopes, moderately eroded",1.97,0.03,0.06,0.02,0.48,2.55,x
+22,11-ATL,"EVAL - MLRA 108D - Dickman, loamy substratum-Sharpsburg complex, 9 to 14 percent slopes, eroded",1.64,0.02,0.01,0,0.4,2.07,x
+24,11-ATL,"EVAL - MLRA 108D - Lagonda and Clarinda soils, 5 to 11 percent slopes, eroded",1.31,0,0.02,0.01,0.36,1.7,x
+15,11-ATL,"EVAL - MLRA 108D - Clarinda silty clay loam, 5 to 9 percent slopes",0.98,0.01,0.02,0.01,0.26,1.29,x
+21,11-ATL,"EVAL - MLRA 108D - Dickman, loamy substratum-Sharpsburg complex, 5 to 9 percent slopes, eroded",0.98,0.01,0,0,0.19,1.19,x
+3,11-ATL,"EVAL - MLRA 107A - Dickman sandy loam, 2 to 5 percent slopes",0.66,0.01,0.01,0,0.41,1.08,x
+6,11-ATL,"EVAL - MLRA 107A - Dickman sandy loam, 5 to 9 percent slopes, moderately eroded",0.66,0.01,0.01,0,0.37,1.04,x
+7,11-ATL,"EVAL - MLRA 107A - Dickman sandy loam, 9 to 14 percent slopes, moderately eroded",0.66,0.01,0,0,0.37,1.04,x
+27,11-ATL,"EVAL - MLRA 108D - Zook-Ely-Gullied land complex, 2 to 5 percent slopes",0.66,0.01,0.03,0.06,0.15,0.9,x
+25,11-ATL,"EVAL - MLRA 108D - Lamoni-Clarinda-Shelby complex, 5 to 9 percent slopes, moderately eroded",0.66,0.01,0.02,0.01,0.15,0.85,x
+1,11-ATL,"EVAL - MLRA 107A - Dickman fine sandy loam, 2 to 5 percent slopes",0.66,0.01,0,0,0.16,0.83,x
+26,11-ATL,"EVAL - MLRA 108D - Lamoni-Clarinda-Shelby complex, 5 to 9 percent slopes, severely eroded",0.66,0.01,0,0,0.15,0.82,x
+23,11-ATL,"EVAL - MLRA 108D - Gullied land-Ely-Colo complex, 2 to 5 percent slopes",0.33,0,0.02,0.02,0.43,0.8,x
+2,11-ATL,"EVAL - MLRA 107A - Dickman fine sandy loam, 2 to 9 percent slopes",0.33,0,0,0,0.22,0.56,x
+9,11-ATL,"EVAL - MLRA 107B - Castana-Gullied land complex, 9 to 14 percent slopes",0.33,0,0,0,0.22,0.56,x
+14,11-ATL,"EVAL - MLRA 107B - Marshall-Dickman complex, 9 to 14 percent slopes, moderately eroded",0.33,0,0,0,0.18,0.52,x
+20,11-ATL,"EVAL - MLRA 108D - Colo-Ely silty clay loams, gullied, 2 to 5 percent slopes",0.33,0,0.02,0.02,0.14,0.51,x
+11,11-ATL,"EVAL - MLRA 107B - Clarinda silty clay loam moderately eroded-severely eroded complex, 9 to 14 percent slopes",0.33,0,0.01,0,0.12,0.46,
+16,11-ATL,"EVAL - MLRA 108D - Clarinda silty clay loam, MLRA 108D, 5 to 9 percent slopes, moderately eroded",0.33,0,0.01,0,0.12,0.46,
+17,11-ATL,"EVAL - MLRA 108D - Clarinda silty clay loam, MLRA 108D, 9 to 14 percent slopes, moderately eroded",0.33,0,0.01,0,0.12,0.46,
+10,11-ATL,"EVAL - MLRA 107B - Clarinda silty clay loam moderately eroded-severely eroded complex, 5 to 9 percent slopes",0.33,0,0,0,0.12,0.45,
+13,11-ATL,"EVAL - MLRA 107B - Clarinda silty clay loam, MLRA 107B, 9 to 14 percent slopes, moderately eroded",0.33,0,0,0,0.12,0.45,
+18,11-ATL,"EVAL - MLRA 108D - Clarinda silty clay loam, MLRA 108D, 9 to 14 percent slopes, severely eroded",0.33,0,0,0,0.12,0.45,
+5,11-ATL,"EVAL - MLRA 107A - Dickman sandy loam, 5 to 12 percent slopes",0.33,0,0,0,0.1,0.44,
+4,11-ATL,"EVAL - MLRA 107A - Dickman sandy loam, 2 to 5 percent slopes, moderately eroded",0.33,0,0,0,0.05,0.39,
+19,11-ATL,"EVAL - MLRA 108D - Clarinda silty clay, 9 to 14 percent slopes, severely eroded",0.33,0,0,0,0.03,0.37,
