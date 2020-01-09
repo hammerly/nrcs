@@ -1,0 +1,34 @@
+---
+title: "A Tour of Vegetation Data in the National Soil Information System"
+author: "John Hammerly"
+date: "`r Sys.Date()`"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+source("https://github.com/hammerly/nrcs/raw/master/plant_map/map_function.R")
+
+pth <- "D:/Cloud/Annum_Data/FY2020/RO/ES R/"
+
+flpth <- c("all_ecosite_vegid.txt", "all_ecosite_vegtransectid.txt", "all_ecosite_croptreesummary.txt", "all_ecosite_plotdisturbance.txt", "all_ecosite_plotgrazing.txt", "all_ecosite_plantinv.txt")
+
+pths <- lapply(pth, "paste0", flpth)
+
+pths <- unlist(pths)
+
+vegmaps <- lapply(pths, "ustermap", "D:/geodata/Area Overlaps/NASIS Overlap Data/s_11au16/s_11au16.shp")
+```
+
+# Sites with Vegetation Plot IDs
+
+```{r}
+vegmaps[1]
+```
+
+# Sites with Vegetation Transect IDs
+
+```{r}
+vegmaps[2]
+```
