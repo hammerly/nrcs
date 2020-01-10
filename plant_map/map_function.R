@@ -51,11 +51,19 @@ ustermap <- function (data, area) {
   as <- us %>% filter(NAME == "American Samoa")
   pas <- ts %>% filter(NAME == "American Samoa")
   
+  mp <- us %>% filter(NAME == "Northern Marianas")
+  pmp <- ts %>% filter(NAME == "Northern Marianas")
+  
   asc <- st_cast(as, "POLYGON")
   
   asc1 <- asc[1:17,]
   
   asc2 <- asc[18:23,]
+  
+  mmp <- ggplot() +
+    geom_sf(data = mp, fill = "#e5f5f9") +
+    geom_sf(data = pmp, size = .1, alpha = .1, color = "#2ca25f") +
+    coord_sf(crs = st_crs(4135), datum = NA)   
   
   mas1 <- ggplot() +
     geom_sf(data = asc1, fill = "#e5f5f9") +
@@ -116,7 +124,7 @@ ustermap <- function (data, area) {
     ) +
     annotation_custom(
       grob = ggplotGrob(mpr),
-      xmin = 2100000,
+      xmin = 1900000,
       xmax = 2900000,
       ymin = -2600000,
       ymax = -2200000
@@ -141,6 +149,13 @@ ustermap <- function (data, area) {
       xmax = -1500000,
       ymin = -1850000,
       ymax = -900000
-    )  
+    )  +
+    annotation_custom(
+      grob = ggplotGrob(mmp),
+      xmin = -3000000,
+      xmax = -2500000,
+      ymin = -1000000,
+      ymax = 800000    
+    )
 }
 

@@ -7,7 +7,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-```{r}
+```{r fig.height=8.5, fig.width=11, message=FALSE, warning=FALSE, paged.print=FALSE}
 source("https://github.com/hammerly/nrcs/raw/master/plant_map/map_function.R")
 
 pth <- "D:/Cloud/Annum_Data/FY2020/RO/ES R/"
